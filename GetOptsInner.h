@@ -6,6 +6,15 @@
 
 namespace GetOptInner
 {
+	std::wstring delQuo(wstring str)
+	{
+		if (*str.c_str() == L'\"' && *(str.c_str() + str.length() - 1) == L'\"')
+		{
+			str = str.substr(1, str.length() - 2);
+		}
+		return str;
+	}
+
 std::vector<std::wstring> SplitString(const wchar_t* opts, wchar_t delimiter)
 {
 	while (*opts == delimiter)
@@ -16,9 +25,11 @@ std::vector<std::wstring> SplitString(const wchar_t* opts, wchar_t delimiter)
 	const wchar_t* preOpts = opts;
 	while (auto next = wcschr(preOpts, L'\"'))
 	{
+
 		const wchar_t* t = next;
 		preOpts = next + 1;
 		next = wcschr(preOpts, L'\"');
+
 		if (!next)
 			return fragments;
 		quoLst.push_back(std::make_pair(t,next-t));
@@ -32,21 +43,31 @@ std::vector<std::wstring> SplitString(const wchar_t* opts, wchar_t delimiter)
 			if (next > quoLst[i].first && next < quoLst[i].first + quoLst[i].second)
 			{
 				next = wcschr(next + 1, delimiter);
+				
 				i = -1;
 			}
 		}
-		
-		fragments.push_back(std::wstring(opts, next));
+		if (!next)
+		{
+			break;
+		}
+		else
+		{
+			fragments.push_back(delQuo(std::wstring(opts, next)));
 
-		while (*next == *(next + 1))
-			next++;
-		opts = next + 1;
+			while (*next == *(next + 1))
+				next++;
+			opts = next + 1;
+		}
 	}
 
 	if (*opts != 0)
-		fragments.push_back(std::wstring(opts));
+		fragments.push_back(delQuo(std::wstring(opts)));
 	return fragments;
 }
+
+
+
 
 std::vector<std::wstring> buildChrString(std::vector<std::wstring> opts)
 {
